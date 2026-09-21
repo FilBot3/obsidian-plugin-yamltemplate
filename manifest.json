@@ -1,0 +1,9 @@
+{
+	"id": "yamltemplate",
+	"name": "YAML Template",
+	"version": "1.0.0",
+	"minAppVersion": "1.4.0",
+	"description": "Render a fenced yamltemplate code block by applying its YAML data to a Handlebars HTML template resolved from a configurable templates folder.",
+	"author": "pdudley",
+	"isDesktopOnly": false
+}

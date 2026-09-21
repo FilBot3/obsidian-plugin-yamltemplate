@@ -1,0 +1,5 @@
+main.js
+node_modules/
+esbuild.config.mjs
+vitest.config.ts
+tests/mocks/
