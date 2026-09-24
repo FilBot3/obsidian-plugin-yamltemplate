@@ -4,12 +4,15 @@
 	"description": "Render a fenced yamltemplate code block by applying its YAML data to a Handlebars HTML template resolved from a configurable templates folder.",
 	"main": "main.js",
 	"scripts": {
-		"dev": "node esbuild.config.mjs",
-		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"css:build": "node scripts/build-css.mjs",
+		"css:verify": "node scripts/verify-css.mjs",
+		"dev": "npm run css:build && node esbuild.config.mjs",
+		"build": "npm run css:build && tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
 		"typecheck": "tsc -noEmit -skipLibCheck",
 		"lint": "eslint . --ext .ts",
 		"test": "vitest run",
-		"test:watch": "vitest"
+		"test:watch": "vitest",
+		"check": "npm run css:build && npm run css:verify && npm run typecheck && npm test"
 	},
 	"keywords": [
 		"obsidian",
@@ -29,6 +32,8 @@
 		"esbuild": "^0.20.0",
 		"eslint": "^8.57.0",
 		"obsidian": "^1.4.11",
+		"postcss": "8.5.28",
+		"postcss-prefix-selector": "2.2.1",
 		"tslib": "^2.6.2",
 		"typescript": "^5.4.0",
 		"vitest": "^1.6.0"
