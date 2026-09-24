@@ -183,10 +183,45 @@ re-renders all currently visible blocks.
 
 ```bash
 npm install     # install dependencies
-npm run dev     # build in watch mode
-npm run build   # type-check and produce a production main.js
+npm run dev     # build CSS + bundle in watch mode
+npm run build   # build CSS, type-check, and produce a production main.js
 npm test        # run unit tests
+npm run check   # one command: build CSS, verify scoping, type-check, test
 ```
+
+`npm run check` is the full local gate and mirrors what CI runs.
+
+### Styling (W3.CSS)
+
+Templates can use [W3.CSS](https://www.w3schools.com/w3css/) utility classes
+(colors, cards, tables, layout columns, badges, spacing, borders, etc.). A
+**subset** of W3.CSS v5.01 is bundled and **scoped** so it only applies inside
+the plugin's rendered blocks — it cannot alter the rest of the Obsidian UI.
+
+`styles.css` is a **generated** artifact. Do not edit it by hand. It is built
+from two sources by `scripts/build-css.mjs`:
+
+- `src/styles.base.css` — the plugin's own hand-written rules.
+- `vendor/w3.css` — pristine W3.CSS v5.01.
+
+The build step keeps only an allowlist of W3.CSS class families, drops
+app-chrome/fixed-position components (modals, sidebars, overlays) and all bare
+element selectors (`html`, `body`, `h1`–`h6`, the embedded normalize reset),
+then prefixes every remaining selector with `.yamltemplate-rendered`. To change
+what ships, edit `src/styles.base.css` or the allowlist/denylist in the build
+script and regenerate:
+
+```bash
+npm run css:build   # regenerate styles.css
+npm run css:verify  # assert scoping/reduction invariants
+```
+
+`css:verify` fails the build if any unscoped/bare or denied selector ever leaks
+into `styles.css`, so scoping cannot silently regress. Because typography base
+rules are dropped, text inside a rendered block inherits your Obsidian theme's
+fonts rather than W3.CSS's defaults. Note that fixed-position W3.CSS components
+are intentionally excluded — even when scoped, `position: fixed` would visually
+escape the block.
 
 ## Manual installation
 

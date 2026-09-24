@@ -1,0 +1,28 @@
+/* Container the plugin renders each yamltemplate block into. */
+.yamltemplate-rendered {
+	display: block;
+}
+
+/* Error / warning box shown when a block cannot be rendered. */
+.yamltemplate-error {
+	border: 1px solid var(--background-modifier-error-hover, #e35);
+	border-left-width: 4px;
+	border-radius: 6px;
+	background: var(--background-secondary);
+	color: var(--text-normal);
+	padding: 10px 12px;
+	font-size: var(--font-ui-small);
+}
+
+.yamltemplate-error__title {
+	font-weight: 600;
+	color: var(--text-error, #e35);
+	margin-bottom: 4px;
+}
+
+.yamltemplate-error__detail {
+	white-space: pre-wrap;
+	font-family: var(--font-monospace);
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+}
