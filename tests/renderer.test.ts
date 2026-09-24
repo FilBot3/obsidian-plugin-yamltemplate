@@ -92,6 +92,43 @@ describe("renderTemplate", () => {
 		expect(renderTemplate("{{subtract a b}}", { a: 5, b: 2 })).toBe("3");
 	});
 
+	it("supports gte and lte helpers", () => {
+		expect(renderTemplate('{{#if (gte a b)}}x{{/if}}', { a: 2, b: 2 })).toBe("x");
+		expect(renderTemplate('{{#if (gte a b)}}x{{/if}}', { a: 3, b: 2 })).toBe("x");
+		expect(renderTemplate('{{#if (lte a b)}}x{{/if}}', { a: 2, b: 2 })).toBe("x");
+		expect(renderTemplate('{{#if (lte a b)}}x{{/if}}', { a: 1, b: 2 })).toBe("x");
+	});
+
+	it("supports and, or, and not helpers", () => {
+		expect(renderTemplate('{{#if (and a b)}}x{{/if}}', { a: true, b: true })).toBe("x");
+		expect(renderTemplate('{{#if (and a b)}}x{{else}}n{{/if}}', { a: true, b: false })).toBe("n");
+		expect(renderTemplate('{{#if (or a b)}}x{{/if}}', { a: false, b: true })).toBe("x");
+		expect(renderTemplate('{{#if (not a)}}x{{/if}}', { a: false })).toBe("x");
+	});
+
+	it("treats empty arrays as falsy in boolean helpers", () => {
+		expect(renderTemplate('{{#if (not xs)}}empty{{/if}}', { xs: [] })).toBe("empty");
+		expect(renderTemplate('{{#if (and xs 1)}}x{{else}}n{{/if}}', { xs: [] })).toBe("n");
+	});
+
+	it("supports multiply, divide, and mod helpers", () => {
+		expect(renderTemplate("{{multiply a b}}", { a: 4, b: 3 })).toBe("12");
+		expect(renderTemplate("{{divide a b}}", { a: 12, b: 4 })).toBe("3");
+		expect(renderTemplate("{{mod a b}}", { a: 7, b: 3 })).toBe("1");
+	});
+
+	it("supports capitalize and length helpers", () => {
+		expect(renderTemplate("{{capitalize v}}", { v: "hello" })).toBe("Hello");
+		expect(renderTemplate("{{capitalize v}}", { v: "" })).toBe("");
+		expect(renderTemplate("{{length xs}}", { xs: [1, 2, 3] })).toBe("3");
+		expect(renderTemplate("{{length s}}", { s: "abc" })).toBe("3");
+	});
+
+	it("uses mod for zebra-striping via each index", () => {
+		const tpl = "{{#each xs}}{{#if (eq (mod @index 2) 0)}}even{{else}}odd{{/if}};{{/each}}";
+		expect(renderTemplate(tpl, { xs: ["a", "b", "c"] })).toBe("even;odd;even;");
+	});
+
 	it("looks up an array item by a computed index", () => {
 		const tpl = "{{#each (range 1 2)}}{{lookup ../xs (subtract this 1)}};{{/each}}";
 		expect(renderTemplate(tpl, { xs: ["a", "b"] })).toBe("a;b;");

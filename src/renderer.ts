@@ -117,15 +117,26 @@ export function sanitizeHtml(html: string): string {
 /**
  * Registers the plugin's built-in Handlebars helpers on an environment.
  *
+ * Handlebars core is deliberately logic-less: it has no comparison, boolean,
+ * math, or string-transform helpers. These custom helpers fill that gap so
+ * templates can make decisions and format values.
+ *
  * Helpers:
  * - `join`: joins an array with a separator (default ", ").
  * - `upper` / `lower`: upper/lower-cases a value.
+ * - `capitalize`: upper-cases the first character of a value.
  * - `json`: serializes a value as pretty-printed JSON.
  * - `default`: returns the value, or a fallback when it is null/undefined/empty.
+ * - `length`: length of an array or string (0 for other types).
  * - `eq` / `ne`: loose equality / inequality, for use in `{{#if (eq a b)}}`.
  * - `gt` / `lt`: numeric greater-than / less-than comparisons.
+ * - `gte` / `lte`: numeric greater-or-equal / less-or-equal comparisons.
+ * - `and` / `or`: boolean conjunction / disjunction of two values.
+ * - `not`: boolean negation of a value.
  * - `range`: produces an inclusive array of integers from start to end.
  * - `add` / `subtract`: numeric addition / subtraction.
+ * - `multiply` / `divide`: numeric multiplication / division.
+ * - `mod`: numeric remainder (a modulo b).
  *
  * @param env - The Handlebars environment to register helpers on.
  */
@@ -138,6 +149,18 @@ function registerBuiltinHelpers(env: typeof Handlebars): void {
 	env.registerHelper("upper", (value: unknown) => String(value ?? "").toUpperCase());
 
 	env.registerHelper("lower", (value: unknown) => String(value ?? "").toLowerCase());
+
+	env.registerHelper("capitalize", (value: unknown) => {
+		const str = String(value ?? "");
+		return str.length === 0 ? str : str.charAt(0).toUpperCase() + str.slice(1);
+	});
+
+	env.registerHelper("length", (value: unknown) => {
+		if (Array.isArray(value) || typeof value === "string") {
+			return value.length;
+		}
+		return 0;
+	});
 
 	env.registerHelper("json", (value: unknown) => JSON.stringify(value, null, 2));
 
@@ -153,6 +176,16 @@ function registerBuiltinHelpers(env: typeof Handlebars): void {
 	env.registerHelper("gt", (a: unknown, b: unknown) => Number(a) > Number(b));
 
 	env.registerHelper("lt", (a: unknown, b: unknown) => Number(a) < Number(b));
+
+	env.registerHelper("gte", (a: unknown, b: unknown) => Number(a) >= Number(b));
+
+	env.registerHelper("lte", (a: unknown, b: unknown) => Number(a) <= Number(b));
+
+	env.registerHelper("and", (a: unknown, b: unknown) => truthy(a) && truthy(b));
+
+	env.registerHelper("or", (a: unknown, b: unknown) => truthy(a) || truthy(b));
+
+	env.registerHelper("not", (value: unknown) => !truthy(value));
 
 	env.registerHelper("range", (start: unknown, end: unknown) => {
 		const from = Math.trunc(Number(start));
@@ -176,6 +209,12 @@ function registerBuiltinHelpers(env: typeof Handlebars): void {
 	env.registerHelper("add", (a: unknown, b: unknown) => Number(a) + Number(b));
 
 	env.registerHelper("subtract", (a: unknown, b: unknown) => Number(a) - Number(b));
+
+	env.registerHelper("multiply", (a: unknown, b: unknown) => Number(a) * Number(b));
+
+	env.registerHelper("divide", (a: unknown, b: unknown) => Number(a) / Number(b));
+
+	env.registerHelper("mod", (a: unknown, b: unknown) => Number(a) % Number(b));
 }
 
 /**
@@ -197,4 +236,21 @@ function looseEquals(a: unknown, b: unknown): boolean {
 		return false;
 	}
 	return String(a) === String(b);
+}
+
+/**
+ * Determines the boolean truthiness of a value for template logic.
+ *
+ * Mirrors Handlebars' own `{{#if}}` semantics: `null`, `undefined`, `false`,
+ * `0`, `NaN`, the empty string, and empty arrays are all falsy; everything else
+ * is truthy. Used by the `and`, `or`, and `not` helpers.
+ *
+ * @param value - The value to test.
+ * @returns True if the value should be treated as truthy.
+ */
+function truthy(value: unknown): boolean {
+	if (Array.isArray(value)) {
+		return value.length > 0;
+	}
+	return Boolean(value);
 }
