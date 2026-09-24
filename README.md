@@ -110,18 +110,59 @@ code, and the `yamltemplate` block renders live.
   ```
   ````
 
-## Built-in helpers
+## Custom helpers
 
-| Helper    | Usage                          | Result                                |
-| --------- | ------------------------------ | ------------------------------------- |
-| `join`    | `{{join skills ", "}}`         | Joins an array with a separator.      |
-| `upper`   | `{{upper name}}`               | Upper-cases a value.                  |
-| `lower`   | `{{lower name}}`               | Lower-cases a value.                  |
-| `json`    | `{{json this}}`                | Pretty-prints a value as JSON.        |
-| `default` | `{{default role "Unknown"}}`   | Falls back when the value is empty.   |
+Handlebars is deliberately "logic-less" — its core has **no** comparison,
+boolean, math, or string-transform helpers, so out of the box you can't even
+write `{{#if (eq status "done")}}`. To make templates practical, this plugin
+registers its own set of custom helpers on top of the standard Handlebars
+block helpers.
+
+### Value formatting
+
+| Helper       | Usage                          | Result                                          |
+| ------------ | ------------------------------ | ----------------------------------------------- |
+| `join`       | `{{join skills ", "}}`         | Joins an array with a separator (default `, `). |
+| `upper`      | `{{upper name}}`               | Upper-cases a value.                            |
+| `lower`      | `{{lower name}}`               | Lower-cases a value.                            |
+| `capitalize` | `{{capitalize name}}`          | Upper-cases the first character.                |
+| `json`       | `{{json this}}`                | Pretty-prints a value as JSON.                  |
+| `default`    | `{{default role "Unknown"}}`   | Falls back when the value is empty.             |
+| `length`     | `{{length skills}}`            | Length of an array or string (else `0`).        |
+
+### Comparison (use inside `{{#if}}`)
+
+| Helper | Usage                       | Result                                     |
+| ------ | --------------------------- | ------------------------------------------ |
+| `eq`   | `{{#if (eq a b)}}`          | Loose equality (`200` matches `"200"`).    |
+| `ne`   | `{{#if (ne a b)}}`          | Loose inequality.                          |
+| `gt`   | `{{#if (gt a b)}}`          | Numeric greater-than.                      |
+| `lt`   | `{{#if (lt a b)}}`          | Numeric less-than.                         |
+| `gte`  | `{{#if (gte a b)}}`         | Numeric greater-than-or-equal.             |
+| `lte`  | `{{#if (lte a b)}}`         | Numeric less-than-or-equal.                |
+
+### Boolean
+
+| Helper | Usage                       | Result                                          |
+| ------ | --------------------------- | ----------------------------------------------- |
+| `and`  | `{{#if (and a b)}}`         | True when both values are truthy.               |
+| `or`   | `{{#if (or a b)}}`          | True when either value is truthy.               |
+| `not`  | `{{#if (not a)}}`           | Negates a value (empty arrays count as falsy).  |
+
+### Math
+
+| Helper     | Usage                  | Result                          |
+| ---------- | ---------------------- | ------------------------------- |
+| `add`      | `{{add a b}}`          | Numeric addition.               |
+| `subtract` | `{{subtract a b}}`     | Numeric subtraction.            |
+| `multiply` | `{{multiply a b}}`     | Numeric multiplication.         |
+| `divide`   | `{{divide a b}}`       | Numeric division.               |
+| `mod`      | `{{mod a b}}`          | Remainder (e.g. for striping).  |
+| `range`    | `{{#each (range 1 5)}}`| Inclusive array of integers.    |
 
 Standard Handlebars block helpers (`{{#each}}`, `{{#if}}`, `{{#unless}}`, `{{#with}}`)
-are also available.
+are also available. Helpers can be nested as subexpressions, e.g.
+`{{#if (and (gt hp 0) (eq (mod @index 2) 0))}}`.
 
 ## Live refresh
 
